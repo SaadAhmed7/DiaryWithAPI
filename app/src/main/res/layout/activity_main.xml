@@ -77,6 +77,46 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/Button_Show_Event"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Event"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/Button_Show_ChainEvent"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Chain Event"/>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -112,12 +152,19 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/RecyclerView_All_Events"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/RecyclerView_All_ChainEvents"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"/>
 
             </LinearLayout>
 

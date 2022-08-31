@@ -17,6 +17,8 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.saad.mydiary.Model.EventType;
@@ -57,6 +59,7 @@ public class AddChainEventActivity extends AppCompatActivity {
         Spinner_Venue = findViewById(R.id.Spinner_Venue);
         AddVenue = findViewById(R.id.EditText_Add_Venue);
         AddEventOption = findViewById(R.id.EditText_Add_Event);
+        Button_ChainEvent = findViewById(R.id.Button_AddChain);
 
         Intent intent = getIntent();
         int EventID = intent.getIntExtra("EventID", 0);
@@ -186,18 +189,152 @@ public class AddChainEventActivity extends AppCompatActivity {
                     if(Spinner_Event.getSelectedItem() != "Other" && Spinner_Venue.getSelectedItem() != "Other")
                     {
                         events.setEventType_ID(Spinner_Event.getSelectedItemPosition());
-                        events.setVenue_ID(Spinner_Event.getSelectedItemPosition());
+                        events.setVenue_ID(Spinner_Venue.getSelectedItemPosition());
                         eventsArrayList.add(events);
-
+                        EditText_Title.setEnabled(false);
+                        Spinner_Event.setEnabled(false);
+                        EditText_Time.setText("");
+                        EditText_Date.setText("");
+                        EditText_Description.setText("");
                     }
                     else
                     {
+                        if(Spinner_Event.getSelectedItem() != "Other" && Spinner_Event.getSelectedItem() == "Other")
+                        {
+                            String AddEvent = URL + "setEvent?EventName=" + AddEventOption;
+                            StringRequest stringRequest = new StringRequest(Request.Method.POST, AddEvent, new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(response);
+                                        events.setEventType_ID(jsonObject.getInt("Event_ID"));
+                                        events.setVenue_ID(Spinner_Venue.getSelectedItemPosition());
+                                        eventsArrayList.add(events);
+                                        EditText_Title.setEnabled(false);
+                                        Spinner_Event.setEnabled(false);
+                                        EditText_Time.setText("");
+                                        EditText_Date.setText("");
+                                        EditText_Description.setText("");
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
 
+                                }
+                            });
+                            RequestQueue requestQueue1 = Volley.newRequestQueue(AddChainEventActivity.this);
+                            requestQueue1.add(stringRequest);
+                        }
+                        else  if(Spinner_Event.getSelectedItem() == "Other" && Spinner_Event.getSelectedItem() != "Other")
+                        {
+                            String AddEvent = URL + "setVenue?VenueName=" + AddVenue;StringRequest stringRequest = new StringRequest(Request.Method.POST, AddEvent, new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                try {
+                                    JSONObject jsonObject = new JSONObject(response);
+                                    events.setEventType_ID(Spinner_Event.getSelectedItemPosition());
+                                    events.setVenue_ID(jsonObject.getInt("Venue_ID"));
+                                    eventsArrayList.add(events);
+                                    EditText_Title.setEnabled(false);
+                                    Spinner_Event.setEnabled(false);
+                                    EditText_Time.setText("");
+                                    EditText_Date.setText("");
+                                    EditText_Description.setText("");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        });
+                            RequestQueue requestQueue1 = Volley.newRequestQueue(AddChainEventActivity.this);
+                            requestQueue1.add(stringRequest);
+                        }
+                        else
+                        {
+                            String AddEvent = URL + "setEventAndVenue?EventName=" + AddEventOption + "&VenueName=" + AddVenue;
+                            StringRequest stringRequest = new StringRequest(Request.Method.POST, AddEvent, new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                try {
+                                    JSONObject jsonObject = new JSONObject(response);
+                                    events.setEventType_ID(jsonObject.getInt("Event_ID"));
+                                    events.setVenue_ID(jsonObject.getInt("Venue_ID"));
+                                    eventsArrayList.add(events);
+                                    EditText_Title.setEnabled(false);
+                                    Spinner_Event.setEnabled(false);
+                                    EditText_Time.setText("");
+                                    EditText_Date.setText("");
+                                    EditText_Description.setText("");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        });
+                            RequestQueue requestQueue1 = Volley.newRequestQueue(AddChainEventActivity.this);
+                            requestQueue1.add(stringRequest);
+                        }
                     }
                 }
                 else
                 {
                     Toast.makeText(AddChainEventActivity.this, "Please Fill the Required Field", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        Button_Save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(eventsArrayList.size()>0)
+                {
+                    try {
+                        JSONArray jsonArray = new JSONArray();
+                        for(int i=0; i<eventsArrayList.size(); i++)
+                        {
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("Event_Title", eventsArrayList.get(i).getEvent_Title());
+                            jsonObject.put("Time", eventsArrayList.get(i).getTime());
+                            jsonObject.put("Event_Date", eventsArrayList.get(i).getEvent_Date());
+                            jsonObject.put("Event_Description", eventsArrayList.get(i).getEvent_Description());
+                            jsonObject.put("Favourite", false);
+                            jsonObject.put("Reminder", false);
+                            jsonObject.put("Venue_ID", eventsArrayList.get(i).getVenue_ID());
+                            jsonObject.put("EventType_ID", eventsArrayList.get(i).getEventType_ID());
+                            jsonArray.put(jsonObject);
+                        }
+                        String AddChainEvent = URL + "AddChainEvent";
+                        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.POST, AddChainEvent, jsonArray, new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray response) {
+                                Toast.makeText(AddChainEventActivity.this, "Chain Added", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        });
+                        RequestQueue requestQueue1 = Volley.newRequestQueue(AddChainEventActivity.this);
+                        requestQueue1.add(jsonObjectRequest);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    Toast.makeText(AddChainEventActivity.this, "Add Event", Toast.LENGTH_SHORT).show();
                 }
             }
         });

@@ -29,7 +29,7 @@ public class AddEventOptionActivity extends AppCompatActivity {
         AddChainEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(AddEventOptionActivity.this, AddEventOptionActivity.class);
+                Intent intent = new Intent(AddEventOptionActivity.this, AddChainEventActivity.class);
                 startActivity(intent);
             }
         });

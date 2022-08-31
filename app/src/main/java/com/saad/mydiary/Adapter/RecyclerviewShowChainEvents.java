@@ -20,9 +20,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.saad.mydiary.AddEventActivity;
-import com.saad.mydiary.MainActivity;
+import com.saad.mydiary.Model.ChainEvent;
 import com.saad.mydiary.Model.EventType;
-import com.saad.mydiary.Model.Events;
 import com.saad.mydiary.Model.Venue;
 import com.saad.mydiary.R;
 
@@ -30,44 +29,44 @@ import java.util.ArrayList;
 
 import static com.saad.mydiary.MainActivity.URL;
 
-public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <RecyclerViewAllEventsAdapter.ViewHolder>  {
+public class RecyclerviewShowChainEvents extends RecyclerView.Adapter <RecyclerviewShowChainEvents.ViewHolder>{
     Context context;
-    ArrayList<Events> eventsArrayList;
+    ArrayList<ChainEvent> chainEventArrayList;
     ArrayList<Venue> venueArrayList;
     ArrayList<EventType> eventTypeArrayList;
 
-    public RecyclerViewAllEventsAdapter(Context context, ArrayList<Events> eventsArrayList, ArrayList<Venue> venueArrayList, ArrayList<EventType> eventTypeArrayList) {
+    public RecyclerviewShowChainEvents(Context context, ArrayList<ChainEvent> chainEventArrayList, ArrayList<Venue> venueArrayList, ArrayList<EventType> eventTypeArrayList) {
         this.context = context;
-        this.eventsArrayList = eventsArrayList;
+        this.chainEventArrayList = chainEventArrayList;
         this.venueArrayList = venueArrayList;
         this.eventTypeArrayList = eventTypeArrayList;
     }
 
-    public RecyclerViewAllEventsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_recyclerview_all_events,parent,false);
-        return new RecyclerViewAllEventsAdapter.ViewHolder(view);
+    public RecyclerviewShowChainEvents.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_recyclerview_show_chain_events,parent,false);
+        return new RecyclerviewShowChainEvents.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAllEventsAdapter.ViewHolder holder, int position) {
-        holder.Title.setText(eventsArrayList.get(position).getEvent_Title());
+    public void onBindViewHolder(@NonNull RecyclerviewShowChainEvents.ViewHolder holder, int position) {
+        holder.Title.setText(chainEventArrayList.get(position).getEvent_Title());
         for(int i=0; i< venueArrayList.size(); i++)
         {
-            if(venueArrayList.get(i).getVenue_ID() == eventsArrayList.get(position).getVenue_ID())
+            if(venueArrayList.get(i).getVenue_ID() == chainEventArrayList.get(position).getVenue_ID())
             {
                 holder.Venue.setText(venueArrayList.get(i).getVenue_Name());
             }
         }
         for(int i=0; i< eventTypeArrayList.size(); i++)
         {
-            if(eventTypeArrayList.get(i).getEventType_ID() == eventsArrayList.get(position).getEvent_ID())
+            if(eventTypeArrayList.get(i).getEventType_ID() == chainEventArrayList.get(position).getEvent_ID())
             {
                 holder.Category.setText(eventTypeArrayList.get(i).getEventType_Name());
             }
         }
-        holder.Date.setText(eventsArrayList.get(position).getEvent_Date());
-        holder.Time.setText(eventsArrayList.get(position).getTime());
-        if(eventsArrayList.get(position).getReminder() == true)
+        holder.Date.setText(chainEventArrayList.get(position).getEvent_Date());
+        holder.Time.setText(chainEventArrayList.get(position).getTime());
+        if(chainEventArrayList.get(position).getReminder() == true)
         {
             holder.toggleButton.setActivated(true);
         }
@@ -76,11 +75,11 @@ public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <Recycler
             holder.toggleButton.setActivated(false);
         }
 
-        holder.toggleButton.setChecked(eventsArrayList.get(position).getReminder());
+        holder.toggleButton.setChecked(chainEventArrayList.get(position).getReminder());
         holder.toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                String RemainderURL = URL + "setToogleButton?EventID=" + eventsArrayList.get(position).getEvent_ID()
+                String RemainderURL = URL + "setChainToogleButton?EventID=" + chainEventArrayList.get(position).getEvent_ID()
                         +"&ToogleButton=" + b;
                 StringRequest stringRequest = new StringRequest(Request.Method.POST, RemainderURL, new Response.Listener<String>() {
                     @Override
@@ -96,24 +95,17 @@ public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <Recycler
                 requestQueue.add(stringRequest);
             }
         });
-        holder.Edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(context, AddEventActivity.class);
-                intent.putExtra("EventID", eventsArrayList.get(position).getEvent_ID());
-                context.startActivity(intent);
-            }
-        });
+
         holder.Delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String DeleteEvent = URL + "deleteEvent?EventID=" + eventsArrayList.get(position).getEvent_ID();
+                String DeleteEvent = URL + "deleteChainEvent?EventID=" + chainEventArrayList.get(position).getEvent_ID();
                 StringRequest stringRequest = new StringRequest(Request.Method.POST, DeleteEvent, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        eventsArrayList.remove(position);
+                        chainEventArrayList.remove(position);
                         notifyItemRemoved(position);
-                        notifyItemRangeChanged(position, eventsArrayList.size());
+                        notifyItemRangeChanged(position, chainEventArrayList.size());
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -125,12 +117,12 @@ public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <Recycler
                 requestQueue.add(stringRequest);
             }
         });
-
     }
+
 
     @Override
     public int getItemCount() {
-        return eventsArrayList.size();
+        return chainEventArrayList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder

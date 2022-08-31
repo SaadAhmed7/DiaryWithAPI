@@ -25,9 +25,11 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.saad.mydiary.Adapter.RecyclerAddDateButtonAdapter;
 import com.saad.mydiary.Adapter.RecyclerViewAllEventsAdapter;
+import com.saad.mydiary.Adapter.RecyclerviewAllChainEventsAdapter;
 import com.saad.mydiary.Adapter.RecyclerviewEventOptionsAdapter;
 import com.saad.mydiary.Interface.OnItemClick;
 import com.saad.mydiary.Interface.OnOptionClick;
+import com.saad.mydiary.Model.ChainEventFile;
 import com.saad.mydiary.Model.EventType;
 import com.saad.mydiary.Model.Events;
 import com.saad.mydiary.Model.Venue;
@@ -55,7 +57,10 @@ import java.util.Locale;
     ArrayList<EventType> eventTypeArrayList = new ArrayList<>();
     ArrayList<Events> eventsArrayList = new ArrayList<>();
     ArrayList<Integer> integerArrayList = new ArrayList<>();
-     final Calendar myCalendar= Calendar.getInstance();
+    ArrayList<ChainEventFile> chainEventFileArrayList = new ArrayList<>();
+    final Calendar myCalendar= Calendar.getInstance();
+    Button Button_ShowEvent, Button_ShowChainEvent;
+    RecyclerView RecyclerView_All_ChainEvents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,10 +75,14 @@ import java.util.Locale;
         RecyclerView_Events_Options = findViewById(R.id.RecyclerView_Events_Option);
         RecyclerView_Add_Button = findViewById(R.id.Linearlayout_Date_Button);
         SearchBox = findViewById(R.id.EditText_Seatch);
+        Button_ShowEvent = findViewById(R.id.Button_Show_Event);
+        Button_ShowChainEvent = findViewById(R.id.Button_Show_ChainEvent);
+        RecyclerView_All_ChainEvents = findViewById(R.id.RecyclerView_All_ChainEvents);
 
         RecyclerView_Events_Options.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         RecyclerView_All_Events.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         RecyclerView_Add_Button.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        RecyclerView_All_ChainEvents.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
         TextView_Date.setText(new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date()));
         try{
@@ -106,6 +115,7 @@ import java.util.Locale;
         String GetAllEventOptionUrl = URL +"getEventOptions";
         String GetAllEventUrl = URL +"getEvent";
         String GetAllVenueUrl = URL +"getVenue";
+        String GetAllChainEventUrl = URL + "getChainEvent";
 
         StringRequest stringRequestEventOption = new StringRequest(Request.Method.GET, GetAllEventOptionUrl, new Response.Listener<String>() {
             @Override
@@ -154,6 +164,7 @@ import java.util.Locale;
                 Toast.makeText(MainActivity.this, "Error While Getting Venue Information", Toast.LENGTH_SHORT).show();
             }
         });
+
         StringRequest stringRequestAllEvent = new StringRequest(Request.Method.GET, GetAllEventUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -184,6 +195,31 @@ import java.util.Locale;
                 Toast.makeText(MainActivity.this, "Error While Getting Events Information", Toast.LENGTH_SHORT).show();
             }
         });
+        StringRequest stringRequestAllChainEvent = new StringRequest(Request.Method.GET, GetAllChainEventUrl, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONArray jsonArray = new JSONArray(response);
+                    for (int i=0; i<jsonArray.length() ;i++)
+                    {
+                        JSONObject jsonObject = new JSONObject(String.valueOf(jsonArray.getJSONObject(i)));
+                        ChainEventFile chainEventFile = new ChainEventFile();
+                        chainEventFile.setChainID(jsonObject.getInt("ChainID"));
+                        chainEventFile.setTitlel(jsonObject.getString("Event_Title"));
+                        chainEventFileArrayList.add(chainEventFile);
+                    }
+                    RecyclerView_All_ChainEvents.setAdapter(new RecyclerviewAllChainEventsAdapter(MainActivity.this, chainEventFileArrayList, venueArrayList, eventTypeArrayList));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
         stringRequestVenue.setRetryPolicy(new DefaultRetryPolicy(0,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
@@ -194,9 +230,13 @@ import java.util.Locale;
         stringRequestEventOption.setRetryPolicy(new DefaultRetryPolicy(0,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        stringRequestAllChainEvent.setRetryPolicy(new DefaultRetryPolicy(0,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         requestQueue.add(stringRequestEventOption);
         requestQueue.add(stringRequestVenue);
         requestQueue.add(stringRequestAllEvent);
+        requestQueue.add(stringRequestAllChainEvent);
 
         Button_Add_Events.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -438,6 +478,22 @@ import java.util.Locale;
             @Override
             public void afterTextChanged(Editable editable) {
 
+            }
+        });
+
+        Button_ShowEvent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RecyclerView_All_Events.setVisibility(View.VISIBLE);
+                RecyclerView_All_ChainEvents.setVisibility(View.GONE);
+            }
+        });
+
+        Button_ShowChainEvent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RecyclerView_All_ChainEvents.setVisibility(View.VISIBLE);
+                RecyclerView_All_Events.setVisibility(View.GONE);
             }
         });
 
