@@ -60,7 +60,7 @@ public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <Recycler
         }
         for(int i=0; i< eventTypeArrayList.size(); i++)
         {
-            if(eventTypeArrayList.get(i).getEventType_ID() == eventsArrayList.get(position).getEvent_ID())
+            if(eventTypeArrayList.get(i).getEventType_ID() == eventsArrayList.get(position).getEventType_ID())
             {
                 holder.Category.setText(eventTypeArrayList.get(i).getEventType_Name());
             }
@@ -125,6 +125,58 @@ public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <Recycler
                 requestQueue.add(stringRequest);
             }
         });
+        if(eventsArrayList.get(position).getFavourite() == true)
+        {
+            holder.Favroute_Empty.setVisibility(View.GONE);
+            holder.Favrouite_Full.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            holder.Favroute_Empty.setVisibility(View.VISIBLE);
+            holder.Favrouite_Full.setVisibility(View.GONE);
+        }
+        holder.Favrouite_Full.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String ChangeFavroute = URL + "UpdateFavroute?EventID=" + eventsArrayList.get(position).getEvent_ID();
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, ChangeFavroute, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        holder.Favroute_Empty.setVisibility(View.VISIBLE);
+                        holder.Favrouite_Full.setVisibility(View.GONE);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+                RequestQueue requestQueue = Volley.newRequestQueue(context);
+                requestQueue.add(stringRequest);
+            }
+        });
+
+        holder.Favroute_Empty.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String ChangeFavroute = URL + "UpdateFavroute?EventID=" + eventsArrayList.get(position).getEvent_ID();
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, ChangeFavroute, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        holder.Favroute_Empty.setVisibility(View.GONE);
+                        holder.Favrouite_Full.setVisibility(View.VISIBLE);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+                RequestQueue requestQueue = Volley.newRequestQueue(context);
+                requestQueue.add(stringRequest);
+            }
+        });
+        holder.Description.setText(eventsArrayList.get(position).getEvent_Description());
 
     }
 
@@ -135,21 +187,25 @@ public class RecyclerViewAllEventsAdapter extends RecyclerView.Adapter <Recycler
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        TextView Title, Venue, Category, Date, Time;
+        TextView Title, Venue, Category, Date, Time, Description;
         ToggleButton toggleButton;
         Button Edit, Delete;
+        Button Favrouite_Full, Favroute_Empty;
 
         public ViewHolder(@NonNull View itemView) {
 
             super(itemView);
             Title = itemView.findViewById(R.id.TextView_Title);
             Venue = itemView.findViewById(R.id.TextView_Venue);
+            Description = itemView.findViewById(R.id.TextView_Description);
             Category = itemView.findViewById(R.id.TextView_Category);
             Date = itemView.findViewById(R.id.TextView_Date);
             Time = itemView.findViewById(R.id.TextView_Time);
             toggleButton = itemView.findViewById(R.id.ToogleButton);
             Edit = itemView.findViewById(R.id.Button_Edit);
             Delete = itemView.findViewById(R.id.Button_Delete);
+            Favrouite_Full = itemView.findViewById(R.id.Button_Favourite_Full);
+            Favroute_Empty = itemView.findViewById(R.id.Button_Favourite_Empty);
         }
     }
 }

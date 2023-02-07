@@ -117,30 +117,23 @@
 
     </LinearLayout>
 
-    <HorizontalScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_height="30dp"
+            android:scrollbars="horizontal"
+            android:orientation="horizontal"
+            android:id="@+id/RecyclerView_Events_Option"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true"
-                android:id="@+id/RecyclerView_Events_Option"/>
-
-        </LinearLayout>
-
-    </HorizontalScrollView>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="400dp"
         android:orientation="horizontal"
         android:weightSum="2">
 
@@ -193,6 +186,33 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
 
+        <Button
+            android:id="@+id/Button_Show_Task"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Wedding"/>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/Button_Show_Task1"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Birthday"/>
+
+
+    </LinearLayout>
 
 </LinearLayout>

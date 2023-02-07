@@ -21,6 +21,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.saad.mydiary.AddEventActivity;
 import com.saad.mydiary.ChainEventActivity;
+import com.saad.mydiary.EditChainActivity;
 import com.saad.mydiary.Model.ChainEvent;
 import com.saad.mydiary.Model.ChainEventFile;
 import com.saad.mydiary.Model.EventType;
@@ -29,6 +30,8 @@ import com.saad.mydiary.Model.Venue;
 import com.saad.mydiary.R;
 
 import java.util.ArrayList;
+
+import static com.saad.mydiary.MainActivity.URL;
 
 public class RecyclerviewAllChainEventsAdapter extends RecyclerView.Adapter <RecyclerviewAllChainEventsAdapter.ViewHolder> {
     Context context;
@@ -59,6 +62,35 @@ public class RecyclerviewAllChainEventsAdapter extends RecyclerView.Adapter <Rec
                 context.startActivity(intent);
             }
         });
+        holder.Delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String DeleteFullChainURL = URL + "deleteFullChain?ChainID="+chainEventArrayList.get(position).getChainID();
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, DeleteFullChainURL, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        chainEventArrayList.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, chainEventArrayList .size());
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+                RequestQueue requestQueue = Volley.newRequestQueue(context);
+                requestQueue.add(stringRequest);
+            }
+        });
+        holder.Edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ChainEventActivity.class);
+                intent.putExtra("ChainID", chainEventArrayList.get(position).getChainID());
+                context.startActivity(intent);
+            }
+        });
 
     }
 
@@ -71,12 +103,15 @@ public class RecyclerviewAllChainEventsAdapter extends RecyclerView.Adapter <Rec
     {
         TextView Title;
         Button File;
+        Button Edit, Delete;
 
         public ViewHolder(@NonNull View itemView) {
 
             super(itemView);
             Title = itemView.findViewById(R.id.TextView_Event_Name);
             File = itemView.findViewById(R.id.Button_File);
+            Edit = itemView.findViewById(R.id.Button_Edit);
+            Delete = itemView.findViewById(R.id.Button_Delete);
         }
     }
 }

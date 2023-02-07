@@ -1,4 +1,4 @@
-package com.saad.mydiary;
+                                                                        package com.saad.mydiary;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -22,12 +23,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.saad.mydiary.Adapter.RecyclerViewAllEventsAdapter;
-import com.saad.mydiary.Adapter.RecyclerviewEventOptionsAdapter;
-import com.saad.mydiary.Database.DatabaseHelper;
 import com.saad.mydiary.Model.EventType;
 import com.saad.mydiary.Model.Events;
 import com.saad.mydiary.Model.Venue;
@@ -44,24 +41,25 @@ import java.util.Locale;
 
 import static com.saad.mydiary.MainActivity.URL;
 
-public class AddEventActivity extends AppCompatActivity {
-
+public class EditChainActivity extends AppCompatActivity {
     Button Button_Save;
     EditText EditText_Title, EditText_Date, EditText_Time, EditText_Description;
     Spinner Spinner_Venue, Spinner_Event;
     EditText AddVenue, AddEventOption;
-    ArrayList<Venue> venueArrayList = new ArrayList<>();
+    ArrayList<com.saad.mydiary.Model.Venue> venueArrayList = new ArrayList<>();
     List<String> Venue = new ArrayList<>();
     ArrayList<EventType> eventTypeArrayList = new ArrayList<>();
     List<String> Event = new ArrayList<>();
     final Calendar myCalendar= Calendar.getInstance();
+    CheckBox checkBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_event);
+        setContentView(R.layout.activity_edit_chain);
 
         Button_Save = findViewById(R.id.Button_Save);
+        checkBox = findViewById(R.id.RadioButton);
         EditText_Title = findViewById(R.id.EditText_Title);
         EditText_Date = findViewById(R.id.EditText_Date);
         EditText_Time = findViewById(R.id.EditText_Time);
@@ -72,7 +70,7 @@ public class AddEventActivity extends AppCompatActivity {
         AddEventOption = findViewById(R.id.EditText_Add_Event);
 
         Intent intent = getIntent();
-        int EventID = intent.getIntExtra("EventID", 0);
+        int EventID = intent.getIntExtra("ChainID", 0);
 
         String GetAllEventOptionUrl = URL +"getEventOptions";
         String GetAllVenueUrl = URL +"getVenue";
@@ -92,7 +90,7 @@ public class AddEventActivity extends AppCompatActivity {
 
                     }
                     Venue.add("Other");
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(AddEventActivity.this, android.R.layout.simple_list_item_1, Venue);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditChainActivity.this, android.R.layout.simple_list_item_1, Venue);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     Spinner_Venue.setAdapter(adapter);
                 } catch (JSONException e) {
@@ -102,7 +100,7 @@ public class AddEventActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(AddEventActivity.this, "Error While Getting Venue Information", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditChainActivity.this, "Error While Getting Venue Information", Toast.LENGTH_SHORT).show();
             }
         });
         StringRequest stringRequestEventOption = new StringRequest(Request.Method.GET, GetAllEventOptionUrl, new Response.Listener<String>() {
@@ -122,7 +120,7 @@ public class AddEventActivity extends AppCompatActivity {
                     Event.remove("All");
                     Event.remove("Favrouite");
                     Event.add("Other");
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(AddEventActivity.this, android.R.layout.simple_list_item_1, Event);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditChainActivity.this, android.R.layout.simple_list_item_1, Event);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     Spinner_Event.setAdapter(adapter);
 
@@ -133,7 +131,7 @@ public class AddEventActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(AddEventActivity.this, "Error While Getting Event Options Information", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditChainActivity.this, "Error While Getting Event Options Information", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -149,7 +147,7 @@ public class AddEventActivity extends AppCompatActivity {
 
         if(EventID != 0)
         {
-            String GetEvent = URL + "getEvent?EventID=" + EventID;
+            String GetEvent = URL + "getOneChainID?EventId=" + EventID;
             StringRequest stringRequest = new StringRequest(Request.Method.GET, GetEvent, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
@@ -214,6 +212,42 @@ public class AddEventActivity extends AppCompatActivity {
             }
         });
 
+        DatePickerDialog.OnDateSetListener date =new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int day) {
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH,month);
+                myCalendar.set(Calendar.DAY_OF_MONTH,day);
+                updateLabel();
+            }
+        };
+
+        EditText_Date.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(EditChainActivity.this,date,myCalendar.get(Calendar.YEAR),myCalendar.get(Calendar.MONTH),myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
+
+        EditText_Time.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar mcurrentTime = Calendar.getInstance();
+                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+                int minute = mcurrentTime.get(Calendar.MINUTE);
+
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(EditChainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        EditText_Time.setText( selectedHour + ":" + selectedMinute);
+                    }
+                }, hour, minute, true);
+                mTimePicker.setTitle("Select Time");
+                mTimePicker.show();
+            }
+        });
+
         Button_Save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -255,30 +289,19 @@ public class AddEventActivity extends AppCompatActivity {
                             jsonObject.put("EventType_ID", events.getEventType_ID());
                             if(EventID == 0)
                             {
-
-//                                DatabaseHelper databaseHelper = new DatabaseHelper(AddEventActivity.this);
-//                                databaseHelper.addEvent(events);
-                                String AddEvent = URL + "setEvent";
-                                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, AddEvent, jsonObject, new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        finish();
-                                    }
-                                }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-
-                                    }
-                                });
-                                RequestQueue requestQueue1 = Volley.newRequestQueue(AddEventActivity.this);
-                                requestQueue1.add(jsonObjectRequest);
                             }
                             else
                             {
-//                                DatabaseHelper databaseHelper = new DatabaseHelper(AddEventActivity.this);
-//                                databaseHelper.updateEvent(events);
                                 jsonObject.put("Event_ID", EventID);
-                                String AddEvent = URL + "setEventUpdate";
+                                String AddEvent = URL + "setChainEventUpdate?check=";
+                                if(checkBox.isChecked())
+                                {
+                                    AddEvent += "true";
+                                }
+                                else
+                                {
+                                    AddEvent += "false";
+                                }
                                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, AddEvent, jsonObject, new Response.Listener<JSONObject>() {
                                     @Override
                                     public void onResponse(JSONObject response) {
@@ -290,7 +313,7 @@ public class AddEventActivity extends AppCompatActivity {
 
                                     }
                                 });
-                                RequestQueue requestQueue1 = Volley.newRequestQueue(AddEventActivity.this);
+                                RequestQueue requestQueue1 = Volley.newRequestQueue(EditChainActivity.this);
                                 requestQueue1.add(jsonObjectRequest);
                             }
 
@@ -301,25 +324,20 @@ public class AddEventActivity extends AppCompatActivity {
                             events.setVenue_ID(0);
                             if(EventID == 0)
                             {
-                                String AddEvent = URL + "setEventWithOption?StringVenue="+AddVenue.getText().toString()+"&StringEventOption="+AddEventOption.getText().toString();
-                                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, AddEvent, jsonObject, new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        finish();
-                                    }
-                                }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
 
-                                    }
-                                });
-                                RequestQueue requestQueue1 = Volley.newRequestQueue(AddEventActivity.this);
-                                requestQueue1.add(jsonObjectRequest);
                             }
                             else
                             {
                                 jsonObject.put("Event_ID", EventID);
-                                String AddEvent = URL + "setEventWithOptionUpdate?StringVenue="+AddVenue.getText().toString()+"&StringEventOption="+AddEventOption.getText().toString();
+                                String AddEvent = URL + "setChainEventWithOptionUpdate?check=";
+                                if(checkBox.isChecked())
+                                {
+                                    AddEvent += "true&StringVenue="+AddVenue.getText().toString()+"&StringEventOption="+AddEventOption.getText().toString();
+                                }
+                                else
+                                {
+                                    AddEvent += "false&StringVenue="+AddVenue.getText().toString()+"&StringEventOption="+AddEventOption.getText().toString();
+                                }
                                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, AddEvent, jsonObject, new Response.Listener<JSONObject>() {
                                     @Override
                                     public void onResponse(JSONObject response) {
@@ -331,7 +349,7 @@ public class AddEventActivity extends AppCompatActivity {
 
                                     }
                                 });
-                                RequestQueue requestQueue1 = Volley.newRequestQueue(AddEventActivity.this);
+                                RequestQueue requestQueue1 = Volley.newRequestQueue(EditChainActivity.this);
                                 requestQueue1.add(jsonObjectRequest);
                             }
                         }
@@ -340,44 +358,8 @@ public class AddEventActivity extends AppCompatActivity {
                     }
                 }
                 else {
-                    Toast.makeText(AddEventActivity.this, "Please Fill the Required Field", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditChainActivity.this, "Please Fill the Required Field", Toast.LENGTH_SHORT).show();
                 }
-            }
-        });
-
-        DatePickerDialog.OnDateSetListener date =new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int day) {
-                myCalendar.set(Calendar.YEAR, year);
-                myCalendar.set(Calendar.MONTH,month);
-                myCalendar.set(Calendar.DAY_OF_MONTH,day);
-                updateLabel();
-            }
-        };
-
-        EditText_Date.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new DatePickerDialog(AddEventActivity.this,date,myCalendar.get(Calendar.YEAR),myCalendar.get(Calendar.MONTH),myCalendar.get(Calendar.DAY_OF_MONTH)).show();
-            }
-        });
-
-        EditText_Time.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Calendar mcurrentTime = Calendar.getInstance();
-                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-                int minute = mcurrentTime.get(Calendar.MINUTE);
-
-                TimePickerDialog mTimePicker;
-                mTimePicker = new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        EditText_Time.setText( selectedHour + ":" + selectedMinute);
-                    }
-                }, hour, minute, true);
-                mTimePicker.setTitle("Select Time");
-                mTimePicker.show();
             }
         });
     }

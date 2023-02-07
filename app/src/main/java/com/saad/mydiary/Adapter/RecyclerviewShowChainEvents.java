@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.saad.mydiary.AddEventActivity;
+import com.saad.mydiary.EditChainActivity;
 import com.saad.mydiary.Model.ChainEvent;
 import com.saad.mydiary.Model.EventType;
 import com.saad.mydiary.Model.Venue;
@@ -50,6 +51,7 @@ public class RecyclerviewShowChainEvents extends RecyclerView.Adapter <Recyclerv
     @Override
     public void onBindViewHolder(@NonNull RecyclerviewShowChainEvents.ViewHolder holder, int position) {
         holder.Title.setText(chainEventArrayList.get(position).getEvent_Title());
+        holder.Description.setText(chainEventArrayList.get(position).getEvent_Description());
         for(int i=0; i< venueArrayList.size(); i++)
         {
             if(venueArrayList.get(i).getVenue_ID() == chainEventArrayList.get(position).getVenue_ID())
@@ -59,7 +61,7 @@ public class RecyclerviewShowChainEvents extends RecyclerView.Adapter <Recyclerv
         }
         for(int i=0; i< eventTypeArrayList.size(); i++)
         {
-            if(eventTypeArrayList.get(i).getEventType_ID() == chainEventArrayList.get(position).getEvent_ID())
+            if(eventTypeArrayList.get(i).getEventType_ID() == chainEventArrayList.get(position).getEventType_ID())
             {
                 holder.Category.setText(eventTypeArrayList.get(i).getEventType_Name());
             }
@@ -117,6 +119,14 @@ public class RecyclerviewShowChainEvents extends RecyclerView.Adapter <Recyclerv
                 requestQueue.add(stringRequest);
             }
         });
+        holder.Edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, EditChainActivity.class);
+                intent.putExtra("ChainID", chainEventArrayList.get(position).getEvent_ID());
+                context.startActivity(intent);
+            }
+        });
     }
 
 
@@ -127,7 +137,7 @@ public class RecyclerviewShowChainEvents extends RecyclerView.Adapter <Recyclerv
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        TextView Title, Venue, Category, Date, Time;
+        TextView Title, Venue, Category, Date, Time, Description;
         ToggleButton toggleButton;
         Button Edit, Delete;
 
@@ -135,6 +145,7 @@ public class RecyclerviewShowChainEvents extends RecyclerView.Adapter <Recyclerv
 
             super(itemView);
             Title = itemView.findViewById(R.id.TextView_Title);
+            Description = itemView.findViewById(R.id.TextView_Description);
             Venue = itemView.findViewById(R.id.TextView_Venue);
             Category = itemView.findViewById(R.id.TextView_Category);
             Date = itemView.findViewById(R.id.TextView_Date);

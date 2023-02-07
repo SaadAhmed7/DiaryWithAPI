@@ -1,11 +1,20 @@
  package com.saad.mydiary;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,203 +49,227 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
- public class MainActivity extends AppCompatActivity  {
-    public static int EventOptions = 1;
-    public static int DateOptions = 1;
-    public static String URL = "http://192.168.100.188/DiaryAPI/api/Diary/";
-    Button Button_Previous_Date, ButtonNext_Date, Button_Add_Events;
-    TextView TextView_Date;
-    RecyclerView RecyclerView_Events_Options, RecyclerView_All_Events, RecyclerView_Add_Button;
-    EditText SearchBox;
-    ArrayList<Venue> venueArrayList = new ArrayList<>();
-    ArrayList<EventType> eventTypeArrayList = new ArrayList<>();
-    ArrayList<Events> eventsArrayList = new ArrayList<>();
-    ArrayList<Integer> integerArrayList = new ArrayList<>();
-    ArrayList<ChainEventFile> chainEventFileArrayList = new ArrayList<>();
-    final Calendar myCalendar= Calendar.getInstance();
-    Button Button_ShowEvent, Button_ShowChainEvent;
-    RecyclerView RecyclerView_All_ChainEvents;
+ public class MainActivity extends AppCompatActivity {
+     public static int EventOptions = 1;
+     public static int DateOptions = 1;
+     public static String URL = "http://192.168.1.106/DiaryAPI/api/Diary/";
+     Button Button_Previous_Date, ButtonNext_Date, Button_Add_Events;
+     TextView TextView_Date;
+     RecyclerView RecyclerView_Events_Options, RecyclerView_All_Events, RecyclerView_Add_Button;
+     EditText SearchBox;
+     ArrayList<Venue> venueArrayList = new ArrayList<>();
+     ArrayList<EventType> eventTypeArrayList = new ArrayList<>();
+     ArrayList<Events> eventsArrayList = new ArrayList<>();
+     ArrayList<Integer> integerArrayList = new ArrayList<>();
+     ArrayList<ChainEventFile> chainEventFileArrayList = new ArrayList<>();
+     final Calendar myCalendar = Calendar.getInstance();
+     Button Button_ShowEvent, Button_ShowChainEvent;
+     RecyclerView RecyclerView_All_ChainEvents;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        Button_Previous_Date = findViewById(R.id.Button_Previous_Date);
-        ButtonNext_Date = findViewById(R.id.Button_Next_Date);
-        Button_Add_Events = findViewById(R.id.Button_View_Calender);
-        TextView_Date = findViewById(R.id.TextView_Date);
-        RecyclerView_All_Events = findViewById(R.id.RecyclerView_All_Events);
-        RecyclerView_Events_Options = findViewById(R.id.RecyclerView_Events_Option);
-        RecyclerView_Add_Button = findViewById(R.id.Linearlayout_Date_Button);
-        SearchBox = findViewById(R.id.EditText_Seatch);
-        Button_ShowEvent = findViewById(R.id.Button_Show_Event);
-        Button_ShowChainEvent = findViewById(R.id.Button_Show_ChainEvent);
-        RecyclerView_All_ChainEvents = findViewById(R.id.RecyclerView_All_ChainEvents);
+     //c1
 
-        RecyclerView_Events_Options.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        RecyclerView_All_Events.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-        RecyclerView_Add_Button.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-        RecyclerView_All_ChainEvents.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
-        TextView_Date.setText(new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date()));
-        try{
-            String CurrentDate = TextView_Date.getText().toString();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
-            Calendar c = Calendar.getInstance();
-            c.setTime(sdf.parse(CurrentDate));
-            int Days = c.getActualMaximum(Calendar.DATE);
-            integerArrayList.clear();
-            for(int i=1; i<= Days; i++)
-            {
-                integerArrayList.add(i);
-            }
-            RecyclerView_Add_Button.setAdapter(new RecyclerAddDateButtonAdapter(MainActivity.this, integerArrayList, onOptionClick));
-        } catch (ParseException e) {
+     String TaskEventOption = "";
+     String TaskDate = "";
+     String TaskName;
+     Button TaskButton,TaskButton1;// = findViewById(R.id.Button_Show_Task);
+
+
+     //c1 complete
+     @Override
+     protected void onCreate(Bundle savedInstanceState) {
+         super.onCreate(savedInstanceState);
+         setContentView(R.layout.activity_main);
+
+         TaskButton = findViewById(R.id.Button_Show_Task);
+         TaskButton1 = findViewById(R.id.Button_Show_Task1);
+
+         Button_Previous_Date = findViewById(R.id.Button_Previous_Date);
+         ButtonNext_Date = findViewById(R.id.Button_Next_Date);
+         Button_Add_Events = findViewById(R.id.Button_View_Calender);
+         TextView_Date = findViewById(R.id.TextView_Date);
+         RecyclerView_All_Events = findViewById(R.id.RecyclerView_All_Events);
+         RecyclerView_Events_Options = findViewById(R.id.RecyclerView_Events_Option);
+         RecyclerView_Add_Button = findViewById(R.id.Linearlayout_Date_Button);
+         SearchBox = findViewById(R.id.EditText_Seatch);
+         Button_ShowEvent = findViewById(R.id.Button_Show_Event);
+         Button_ShowChainEvent = findViewById(R.id.Button_Show_ChainEvent);
+         RecyclerView_All_ChainEvents = findViewById(R.id.RecyclerView_All_ChainEvents);
+
+
+         RecyclerView_Events_Options.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+         RecyclerView_Events_Options.setNestedScrollingEnabled(false);
+         RecyclerView_All_Events.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+         RecyclerView_Add_Button.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+         RecyclerView_All_ChainEvents.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+
+         TextView_Date.setText(new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date()));
+         try {
+             String CurrentDate = TextView_Date.getText().toString();
+             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+             Calendar c = Calendar.getInstance();
+             c.setTime(sdf.parse(CurrentDate));
+             int Days = c.getActualMaximum(Calendar.DATE);
+             integerArrayList.clear();
+             for (int i = 1; i <= Days; i++) {
+                 integerArrayList.add(i);
+             }
+             RecyclerView_Add_Button.setAdapter(new RecyclerAddDateButtonAdapter(MainActivity.this, integerArrayList, onOptionClick));
+         } catch (ParseException e) {
              e.printStackTrace();
-        }
+         }
 
-        DatePickerDialog.OnDateSetListener date =new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int day) {
-                myCalendar.set(Calendar.YEAR, year);
-                myCalendar.set(Calendar.MONTH,month);
-                myCalendar.set(Calendar.DAY_OF_MONTH,day);
-                updateLabel();
-            }
-        };
+         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+             @Override
+             public void onDateSet(DatePicker view, int year, int month, int day) {
+                 myCalendar.set(Calendar.YEAR, year);
+                 myCalendar.set(Calendar.MONTH, month);
+                 myCalendar.set(Calendar.DAY_OF_MONTH, day);
+                 updateLabel();
+             }
+         };
 
 
-        String GetAllEventOptionUrl = URL +"getEventOptions";
-        String GetAllEventUrl = URL +"getEvent";
-        String GetAllVenueUrl = URL +"getVenue";
-        String GetAllChainEventUrl = URL + "getChainEvent";
+         String GetAllEventOptionUrl = URL + "getEventOptions";
+         String GetAllEventUrl = URL + "getEvent";
+         String GetAllVenueUrl = URL + "getVenue";
 
-        StringRequest stringRequestEventOption = new StringRequest(Request.Method.GET, GetAllEventOptionUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONArray jsonArray = new JSONArray(response);
-                    for(int i=0; i<jsonArray.length(); i++)
-                    {
-                        JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
-                        EventType eventType = new EventType();
-                        eventType.setEventType_ID(jsonObject.getInt("EventType_ID"));
-                        eventType.setEventType_Name(jsonObject.getString("EventType_Name"));
-                        eventTypeArrayList.add(eventType);
-                    }
-                    RecyclerView_Events_Options.setAdapter(new RecyclerviewEventOptionsAdapter(MainActivity.this, eventTypeArrayList, onItemClick));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Error While Getting Event Options Information", Toast.LENGTH_SHORT).show();
-            }
-        });
-        StringRequest stringRequestVenue = new StringRequest(Request.Method.GET, GetAllVenueUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONArray jsonArray = new JSONArray(response);
-                    for (int i=0; i<jsonArray.length(); i++)
-                    {
-                        JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
-                        Venue venue = new Venue();
-                        venue.setVenue_ID(jsonObject.getInt("Venue_ID"));
-                        venue.setVenue_Name(jsonObject.getString("Venue_Name"));
-                        venueArrayList.add(venue);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Error While Getting Venue Information", Toast.LENGTH_SHORT).show();
-            }
-        });
 
-        StringRequest stringRequestAllEvent = new StringRequest(Request.Method.GET, GetAllEventUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONArray jsonArray = new JSONArray(response);
-                    for(int i=0; i<jsonArray.length(); i++) {
-                        JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
-                        Events events = new Events();
-                        events.setEvent_ID(jsonObject.getInt("Event_ID"));
-                        events.setEvent_Title(jsonObject.getString("Event_Title"));
-                        events.setEvent_Date(jsonObject.getString("Event_Date"));
-                        events.setVenue_ID(jsonObject.getInt("Venue_ID"));
-                        events.setEvent_Description(jsonObject.getString("Event_Description"));
-                        events.setEventType_ID(jsonObject.getInt("EventType_ID"));
-                        events.setReminder(jsonObject.getBoolean("Reminder"));
-                        events.setFavourite(jsonObject.getBoolean("Favourite"));
-                        events.setTime(jsonObject.getString("Time"));
-                        eventsArrayList.add(events);
-                    }
-                    RecyclerView_All_Events.setAdapter(new RecyclerViewAllEventsAdapter(MainActivity.this, eventsArrayList, venueArrayList, eventTypeArrayList));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Error While Getting Events Information", Toast.LENGTH_SHORT).show();
-            }
-        });
-        StringRequest stringRequestAllChainEvent = new StringRequest(Request.Method.GET, GetAllChainEventUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONArray jsonArray = new JSONArray(response);
-                    for (int i=0; i<jsonArray.length() ;i++)
-                    {
-                        JSONObject jsonObject = new JSONObject(String.valueOf(jsonArray.getJSONObject(i)));
-                        ChainEventFile chainEventFile = new ChainEventFile();
-                        chainEventFile.setChainID(jsonObject.getInt("ChainID"));
-                        chainEventFile.setTitlel(jsonObject.getString("Event_Title"));
-                        chainEventFileArrayList.add(chainEventFile);
-                    }
-                    RecyclerView_All_ChainEvents.setAdapter(new RecyclerviewAllChainEventsAdapter(MainActivity.this, chainEventFileArrayList, venueArrayList, eventTypeArrayList));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+         StringRequest stringRequestEventOption = new StringRequest(Request.Method.GET, GetAllEventOptionUrl, new Response.Listener<String>() {
+             @Override
+             public void onResponse(String response) {
+                 try {
+                     JSONArray jsonArray = new JSONArray(response);
+                     for (int i = 0; i < jsonArray.length(); i++) {
+                         JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
+                         EventType eventType = new EventType();
+                         eventType.setEventType_ID(jsonObject.getInt("EventType_ID"));
+                         eventType.setEventType_Name(jsonObject.getString("EventType_Name"));
+                         eventTypeArrayList.add(eventType);
+                     }
+                     RecyclerView_Events_Options.setAdapter(new RecyclerviewEventOptionsAdapter(MainActivity.this, eventTypeArrayList, onItemClick));
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                 }
+             }
+         }, new Response.ErrorListener() {
+             @Override
+             public void onErrorResponse(VolleyError error) {
+                 Toast.makeText(MainActivity.this, "Error While Getting Event Options Information", Toast.LENGTH_SHORT).show();
+             }
+         });
+         StringRequest stringRequestVenue = new StringRequest(Request.Method.GET, GetAllVenueUrl, new Response.Listener<String>() {
+             @Override
+             public void onResponse(String response) {
+                 try {
+                     JSONArray jsonArray = new JSONArray(response);
+                     for (int i = 0; i < jsonArray.length(); i++) {
+                         JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
+                         Venue venue = new Venue();
+                         venue.setVenue_ID(jsonObject.getInt("Venue_ID"));
+                         venue.setVenue_Name(jsonObject.getString("Venue_Name"));
+                         venueArrayList.add(venue);
+                     }
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                 }
+             }
+         }, new Response.ErrorListener() {
+             @Override
+             public void onErrorResponse(VolleyError error) {
+                 Toast.makeText(MainActivity.this, "Error While Getting Venue Information", Toast.LENGTH_SHORT).show();
+             }
+         });
+         StringRequest stringRequestAllEvent = new StringRequest(Request.Method.GET, GetAllEventUrl, new Response.Listener<String>() {
+             @RequiresApi(api = Build.VERSION_CODES.M)
+             @Override
+             public void onResponse(String response) {
+                 try {
+                     JSONArray jsonArray = new JSONArray(response);
+                     for (int i = 0; i < jsonArray.length(); i++) {
+                         JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
+                         Events events = new Events();
+                         events.setEvent_ID(jsonObject.getInt("Event_ID"));
+                         events.setEvent_Title(jsonObject.getString("Event_Title"));
+                         events.setEvent_Date(jsonObject.getString("Event_Date"));
+                         events.setVenue_ID(jsonObject.getInt("Venue_ID"));
+                         events.setEvent_Description(jsonObject.getString("Event_Description"));
+                         events.setEventType_ID(jsonObject.getInt("EventType_ID"));
+                         events.setReminder(jsonObject.getBoolean("Reminder"));
+                         events.setFavourite(jsonObject.getBoolean("Favourite"));
+                         events.setTime(jsonObject.getString("Time"));
+                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                         String CurrentDate = sdf.format(myCalendar.getTime());
+                         if (CurrentDate.equals(events.getEvent_Date())) {
+                             String TimePattern = "HH:mm";
+                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TimePattern);
+                             String CurrentTime = simpleDateFormat.format(myCalendar.getTime());
+                             SimpleDateFormat s = new SimpleDateFormat("hh:mm");
+                             Date inTime = s.parse(CurrentTime);
+                             Date outTime = s.parse(events.getTime());
+                             if (inTime.before(outTime)) {
+                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                 PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, intent, PendingIntent.FLAG_ONE_SHOT);
+                                 String CHANNEL_ID = "channel_name";// The id of the channel.
+                                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                                         .setSmallIcon(R.drawable.ic_baseline_notifications_24)
+                                         .setContentTitle(events.getEvent_Title())
+                                         .setContentText(events.getEvent_Description())
+                                         .setAutoCancel(true)
+                                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                         .setContentIntent(pendingIntent);
+                                 NotificationManager notificationManager = (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
+                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                     CharSequence name = "Channel Name";// The user-visible name of the channel.
+                                     int importance = NotificationManager.IMPORTANCE_HIGH;
+                                     NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+                                     notificationManager.createNotificationChannel(mChannel);
+                                 }
+                                 notificationManager.notify(1, notificationBuilder.build());
+                             }
+                         }
+                         eventsArrayList.add(events);
+                     }
+                     RecyclerView_All_Events.setAdapter(new RecyclerViewAllEventsAdapter(MainActivity.this, eventsArrayList, venueArrayList, eventTypeArrayList));
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                 } catch (ParseException e) {
+                     e.printStackTrace();
+                 }
+             }
+         }, new Response.ErrorListener() {
+             @Override
+             public void onErrorResponse(VolleyError error) {
+                 Toast.makeText(MainActivity.this, "Error While Getting Events Information", Toast.LENGTH_SHORT).show();
+             }
+         });
 
-            }
-        });
 
-        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-        stringRequestVenue.setRetryPolicy(new DefaultRetryPolicy(0,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        stringRequestAllEvent.setRetryPolicy(new DefaultRetryPolicy(0,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        stringRequestEventOption.setRetryPolicy(new DefaultRetryPolicy(0,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        stringRequestAllChainEvent.setRetryPolicy(new DefaultRetryPolicy(0,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        requestQueue.add(stringRequestEventOption);
-        requestQueue.add(stringRequestVenue);
-        requestQueue.add(stringRequestAllEvent);
-        requestQueue.add(stringRequestAllChainEvent);
+         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+         stringRequestVenue.setRetryPolicy(new DefaultRetryPolicy(0,
+                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+         stringRequestAllEvent.setRetryPolicy(new DefaultRetryPolicy(0,
+                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+         stringRequestEventOption.setRetryPolicy(new DefaultRetryPolicy(0,
+                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+         requestQueue.add(stringRequestEventOption);
+         requestQueue.add(stringRequestVenue);
+         requestQueue.add(stringRequestAllEvent);
+     //}
+ //});
+
+
 
         Button_Add_Events.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -481,21 +514,145 @@ import java.util.Locale;
             }
         });
 
-        Button_ShowEvent.setOnClickListener(new View.OnClickListener() {
+        TaskButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RecyclerView_All_Events.setVisibility(View.VISIBLE);
-                RecyclerView_All_ChainEvents.setVisibility(View.GONE);
+                StringRequest stringRequestAllEventAgain = new StringRequest(Request.Method.GET, GetAllEventUrl, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            eventsArrayList.clear();
+                            for(int i=0; i<jsonArray.length(); i++) {
+                                JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
+                                Events events = new Events();
+                                events.setEvent_ID(jsonObject.getInt("Event_ID"));
+                                events.setEvent_Title(jsonObject.getString("Event_Title"));
+                                events.setEvent_Date(jsonObject.getString("Event_Date"));
+                                events.setVenue_ID(jsonObject.getInt("Venue_ID"));
+                                events.setEvent_Description(jsonObject.getString("Event_Description"));
+                                events.setEventType_ID(jsonObject.getInt("EventType_ID"));
+                                events.setReminder(jsonObject.getBoolean("Reminder"));
+                                events.setFavourite(jsonObject.getBoolean("Favourite"));
+                                events.setTime(jsonObject.getString("Time"));
+                                eventsArrayList.add(events);
+                            }
+                            RecyclerView_All_Events.setAdapter(new RecyclerViewAllEventsAdapter(MainActivity.this, eventsArrayList, venueArrayList, eventTypeArrayList));
+                            RecyclerView_All_Events.setVisibility(View.VISIBLE);
+                            RecyclerView_All_ChainEvents.setVisibility(View.GONE);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "Error While Getting Events Information", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                requestQueue.add(stringRequestAllEventAgain);
+
             }
         });
 
         Button_ShowChainEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RecyclerView_All_ChainEvents.setVisibility(View.VISIBLE);
-                RecyclerView_All_Events.setVisibility(View.GONE);
+                String GetAllChainEventUrl = URL + "getChainEvent";
+                StringRequest stringRequestAllChainEvent = new StringRequest(Request.Method.GET, GetAllChainEventUrl, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            chainEventFileArrayList.clear();
+                            for (int i=0; i<jsonArray.length() ;i++)
+                            {
+                                JSONObject jsonObject = new JSONObject(String.valueOf(jsonArray.getJSONObject(i)));
+                                ChainEventFile chainEventFile = new ChainEventFile();
+                                chainEventFile.setChainID(jsonObject.getInt("ChainID"));
+                                chainEventFile.setTitlel(jsonObject.getString("Event_Title"));
+                                chainEventFileArrayList.add(chainEventFile);
+                            }
+                            RecyclerView_All_ChainEvents.setAdapter(new RecyclerviewAllChainEventsAdapter(MainActivity.this, chainEventFileArrayList, venueArrayList, eventTypeArrayList));
+                            RecyclerView_All_ChainEvents.setVisibility(View.VISIBLE);
+                            RecyclerView_All_Events.setVisibility(View.GONE);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+                stringRequestAllChainEvent.setRetryPolicy(new DefaultRetryPolicy(0,
+                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                requestQueue.add(stringRequestAllChainEvent);
             }
         });
+
+        TaskButton.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+                 TaskName = SearchBox.getText().toString();
+                 if(!TaskEventOption.equals("") )
+                 {
+                     if(!TaskName.equals(""))
+                     {
+                         String TaskURL = URL + "getEventTask?Option="+TaskEventOption.toString()+ "&Name="+TaskName;
+                         StringRequest request = new StringRequest(Request.Method.GET, TaskURL, new Response.Listener<String>() {
+                             @Override
+                             public void onResponse(String response) {
+                                 try {
+                                     JSONArray jsonArray = new JSONArray(response);
+                                     eventsArrayList.clear();
+                                     for(int i=0; i<jsonArray.length(); i++) {
+                                         JSONObject jsonObject = new JSONObject(jsonArray.getJSONObject(i).toString());
+                                         Events events = new Events();
+                                         events.setEvent_ID(jsonObject.getInt("Event_ID"));
+                                         events.setEvent_Title(jsonObject.getString("Event_Title"));
+                                         events.setEvent_Date(jsonObject.getString("Event_Date"));
+                                         events.setVenue_ID(jsonObject.getInt("Venue_ID"));
+                                         events.setEvent_Description(jsonObject.getString("Event_Description"));
+                                         events.setEventType_ID(jsonObject.getInt("EventType_ID"));
+                                         events.setReminder(jsonObject.getBoolean("Reminder"));
+                                         events.setFavourite(jsonObject.getBoolean("Favourite"));
+                                         events.setTime(jsonObject.getString("Time"));
+                                         String FirstFourCharacterOfYears = TextView_Date.getText().toString().substring(0,4);
+                                         String FirstFourCharacterOfYearsDate = events.getEvent_Date().toString().substring(0,4);
+                                         if(FirstFourCharacterOfYears.equals(FirstFourCharacterOfYearsDate)) {
+                                             eventsArrayList.add(events);
+                                         }
+                                     }
+                                     RecyclerView_All_Events.setAdapter(new RecyclerViewAllEventsAdapter(MainActivity.this, eventsArrayList, venueArrayList, eventTypeArrayList));
+                                     RecyclerView_All_Events.setVisibility(View.VISIBLE);
+                                     RecyclerView_All_ChainEvents.setVisibility(View.GONE);
+                                 } catch (JSONException e) {
+                                     e.printStackTrace();
+                                 }
+                             }
+                         }, new Response.ErrorListener() {
+                             @Override
+                             public void onErrorResponse(VolleyError error) {
+
+                             }
+                         });
+                         RequestQueue requestQueue1 = Volley.newRequestQueue(MainActivity.this);
+                         requestQueue1.add(request);
+                     }
+                     else
+                     {
+                         Toast.makeText(MainActivity.this, "Please Enter Name to Seaech in SearchBox", Toast.LENGTH_SHORT).show();
+                     }
+                 }
+                 else
+                 {
+                     Toast.makeText(MainActivity.this, "Please Select Event", Toast.LENGTH_SHORT).show();
+                 }
+             }
+         });
 
     }
 
@@ -508,7 +665,40 @@ import java.util.Locale;
      OnItemClick onItemClick = new OnItemClick() {
          @Override
          public void onClick(int value) {
+             for(int i=0; i< eventTypeArrayList.size(); i++)
+             {
+                 if(eventTypeArrayList.get(i).getEventType_ID() == value)
+                 {
+                     TaskEventOption = eventTypeArrayList.get(i).getEventType_Name();
+                 }
+             }
              RecyclerView_All_Events.setAdapter(null);
+             String CHainOption = URL + "getSpecificChainEventNew?EventTypeId="+value;
+             StringRequest request = new StringRequest(Request.Method.GET, CHainOption, new Response.Listener<String>() {
+                 @Override
+                 public void onResponse(String response) {
+                     try {
+                         JSONArray jsonArray = new JSONArray(response);
+                         chainEventFileArrayList.clear();
+                         for (int i=0; i<jsonArray.length() ;i++)
+                         {
+                             JSONObject jsonObject = new JSONObject(String.valueOf(jsonArray.getJSONObject(i)));
+                             ChainEventFile chainEventFile = new ChainEventFile();
+                             chainEventFile.setChainID(jsonObject.getInt("ChainID"));
+                             chainEventFile.setTitlel(jsonObject.getString("Event_Title"));
+                             chainEventFileArrayList.add(chainEventFile);
+                         }
+                         RecyclerView_All_ChainEvents.setAdapter(new RecyclerviewAllChainEventsAdapter(MainActivity.this, chainEventFileArrayList, venueArrayList, eventTypeArrayList));
+                     } catch (JSONException e) {
+                         e.printStackTrace();
+                     }
+                 }
+             }, new Response.ErrorListener() {
+                 @Override
+                 public void onErrorResponse(VolleyError error) {
+
+                 }
+             });
              String GetSpecificEventUrl = URL + "getSpecificEvent?EventTypeId=";
              StringRequest stringRequestSpecificEvent = new StringRequest(Request.Method.GET, GetSpecificEventUrl + value, new Response.Listener<String>() {
                  @Override
@@ -542,6 +732,7 @@ import java.util.Locale;
                  }
              });
              RequestQueue requestQueueSpecificEvent = Volley.newRequestQueue(getApplicationContext());
+             requestQueueSpecificEvent.add(request);
              requestQueueSpecificEvent.add(stringRequestSpecificEvent);
          }
      };
@@ -554,14 +745,16 @@ import java.util.Locale;
             String Date = "";
             if(value<10)
             {
-                Date = TextView_Date.getText().toString().replace(" ", "-") + "-0" + value;
+                Date = TextView_Date.getText().toString().replace(" ", "/") + "-0" + value;
+                Date = Date.replace("-","/");
             }
             else
             {
-                Date = TextView_Date.getText().toString().replace(" ", "-") + "-" + value;
+                Date = TextView_Date.getText().toString().replace(" ", "/") + "-" + value;
+                Date = Date.replace("-","/");
             }
-
-            StringRequest stringRequestSpecificEvent = new StringRequest(Request.Method.GET, GetSpecificEventUrl + EventOptions + "&Date=" + Date, new Response.Listener<String>() {
+            GetSpecificEventUrl += EventOptions + "&Date=" + Date;
+            StringRequest stringRequestSpecificEvent = new StringRequest(Request.Method.GET, GetSpecificEventUrl , new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
                     try {

@@ -21,7 +21,7 @@ public class RecyclerviewEventOptionsAdapter extends RecyclerView.Adapter <Recyc
     ArrayList<EventType> eventTypeArrayList;
     private OnItemClick mCallback;
 
-    public RecyclerviewEventOptionsAdapter(Context context, ArrayList<EventType> eventTypeArrayList, OnItemClick listener) {
+    public  RecyclerviewEventOptionsAdapter(Context context, ArrayList<EventType> eventTypeArrayList, OnItemClick listener) {
         this.context = context;
         this.eventTypeArrayList = eventTypeArrayList;
         this.mCallback = listener;

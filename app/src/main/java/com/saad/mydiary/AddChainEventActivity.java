@@ -1,15 +1,21 @@
 package com.saad.mydiary;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -29,8 +35,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static com.saad.mydiary.MainActivity.URL;
 
@@ -44,6 +56,9 @@ public class AddChainEventActivity extends AppCompatActivity {
     ArrayList<EventType> eventTypeArrayList = new ArrayList<>();
     List<String> Event = new ArrayList<>();
     ArrayList<Events> eventsArrayList = new ArrayList<>();
+    final Calendar myCalendar= Calendar.getInstance();
+    String FirstDate = "";
+    int On = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +125,7 @@ public class AddChainEventActivity extends AppCompatActivity {
                         Event.add(eventType.getEventType_Name());
                     }
                     Event.remove("All");
+                    Event.remove("Favrouite");
                     Event.add("Other");
                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(AddChainEventActivity.this, android.R.layout.simple_list_item_1, Event);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -175,6 +191,7 @@ public class AddChainEventActivity extends AppCompatActivity {
         });
 
         Button_ChainEvent.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 if(EditText_Title.length()>0 && EditText_Date.length()>0 && EditText_Description.length()>0 && EditText_Time.length()>0)
@@ -183,18 +200,56 @@ public class AddChainEventActivity extends AppCompatActivity {
                     events.setEvent_Title(EditText_Title.getText().toString());
                     events.setTime(EditText_Time.getText().toString());
                     events.setEvent_Date(EditText_Date.getText().toString());
+                    if(On == 0)
+                    {
+                        FirstDate = events.getEvent_Date();
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                        Calendar c = Calendar.getInstance();
+                        try {
+                            c.setTime(sdf.parse(FirstDate));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        c.add(Calendar.DATE, 1);  // number of days to add
+                        FirstDate = sdf.format(c.getTime());
+                        On = 1;
+                    }
+                    else
+                    {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                        Calendar c = Calendar.getInstance();
+                        try {
+                            c.setTime(sdf.parse(FirstDate));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        c.add(Calendar.DATE, 1);  // number of days to add
+                        FirstDate = sdf.format(c.getTime());
+                    }
                     events.setEvent_Description(EditText_Description.getText().toString());
                     events.setFavourite(false);
                     events.setReminder(false);
                     if(Spinner_Event.getSelectedItem() != "Other" && Spinner_Venue.getSelectedItem() != "Other")
                     {
-                        events.setEventType_ID(Spinner_Event.getSelectedItemPosition());
-                        events.setVenue_ID(Spinner_Venue.getSelectedItemPosition());
+                        for(int i=0; i< venueArrayList.size(); i++)
+                        {
+                            if(venueArrayList.get(i).getVenue_Name() == Spinner_Venue.getSelectedItem().toString())
+                            {
+                                events.setVenue_ID(venueArrayList.get(i).getVenue_ID());
+                            }
+                        }
+                        for(int i=0; i< eventTypeArrayList.size(); i++)
+                        {
+                            if(eventTypeArrayList.get(i).getEventType_Name() == Spinner_Event.getSelectedItem().toString())
+                            {
+                                events.setEventType_ID(eventTypeArrayList.get(i).getEventType_ID());
+                            }
+                        }
                         eventsArrayList.add(events);
                         EditText_Title.setEnabled(false);
                         Spinner_Event.setEnabled(false);
                         EditText_Time.setText("");
-                        EditText_Date.setText("");
+                        EditText_Date.setText(FirstDate);
                         EditText_Description.setText("");
                     }
                     else
@@ -213,7 +268,7 @@ public class AddChainEventActivity extends AppCompatActivity {
                                         EditText_Title.setEnabled(false);
                                         Spinner_Event.setEnabled(false);
                                         EditText_Time.setText("");
-                                        EditText_Date.setText("");
+                                        EditText_Date.setText(FirstDate);
                                         EditText_Description.setText("");
                                     } catch (JSONException e) {
                                         e.printStackTrace();
@@ -241,7 +296,7 @@ public class AddChainEventActivity extends AppCompatActivity {
                                     EditText_Title.setEnabled(false);
                                     Spinner_Event.setEnabled(false);
                                     EditText_Time.setText("");
-                                    EditText_Date.setText("");
+                                    EditText_Date.setText(FirstDate);
                                     EditText_Description.setText("");
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -270,7 +325,7 @@ public class AddChainEventActivity extends AppCompatActivity {
                                     EditText_Title.setEnabled(false);
                                     Spinner_Event.setEnabled(false);
                                     EditText_Time.setText("");
-                                    EditText_Date.setText("");
+                                    EditText_Date.setText(FirstDate);
                                     EditText_Description.setText("");
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -339,5 +394,47 @@ public class AddChainEventActivity extends AppCompatActivity {
             }
         });
 
+        DatePickerDialog.OnDateSetListener date =new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int day) {
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH,month);
+                myCalendar.set(Calendar.DAY_OF_MONTH,day);
+                updateLabel();
+            }
+        };
+
+        EditText_Date.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(AddChainEventActivity.this,date,myCalendar.get(Calendar.YEAR),myCalendar.get(Calendar.MONTH),myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
+
+        EditText_Time.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar mcurrentTime = Calendar.getInstance();
+                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+                int minute = mcurrentTime.get(Calendar.MINUTE);
+
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(AddChainEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        EditText_Time.setText( selectedHour + ":" + selectedMinute);
+                    }
+                }, hour, minute, true);
+                mTimePicker.setTitle("Select Time");
+                mTimePicker.show();
+            }
+        });
+
+    }
+
+    private void updateLabel(){
+        String myFormat="yyyy/MM/dd";
+        SimpleDateFormat dateFormat=new SimpleDateFormat(myFormat, Locale.US);
+        EditText_Date.setText(dateFormat.format(myCalendar.getTime()));
     }
 }

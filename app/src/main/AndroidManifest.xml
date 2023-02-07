@@ -12,7 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyDiary"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ChainEventActivity"></activity>
+        <activity android:name=".EditChainActivity"></activity>
+        <activity android:name=".ChainEventActivity" />
         <activity android:name=".AddChainEventActivity" />
         <activity android:name=".AddEventOptionActivity" />
         <activity android:name=".AddEventActivity" />

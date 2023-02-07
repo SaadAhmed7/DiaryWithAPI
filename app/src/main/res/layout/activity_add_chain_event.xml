@@ -112,7 +112,9 @@
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/EditText_Time"/>
+                    android:id="@+id/EditText_Time"
+                    android:focusable="false"
+                    android:editable="false"/>
 
             </LinearLayout>
 
@@ -133,7 +135,9 @@
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/EditText_Date"/>
+                    android:id="@+id/EditText_Date"
+                    android:focusable="false"
+                    android:editable="false"/>
 
             </LinearLayout>
 
